@@ -20,13 +20,42 @@ function renderMovieList(movie) {
     const li = document.createElement("li");
     li.textContent = `${movie.title}`;
     li.id = "id" + movie.id;
+
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.classList.add("delete-button");
+    deleteButton.addEventListener("click", (event) =>{
+        //stop event from bubbling up the delete button
+        event.stopPropagation();
+        deleteMovie(movie.id);
+    })
+    li.appendChild(deleteButton);
+
     const ul = document.querySelector("#films");
     ul.appendChild(li);
     li.classList.add("film");
     li.classList.add('item');
     li.addEventListener("click", () => {handleMovieClick(movie)})
 }
-
+//Deletion of a movie
+function deleteMovie(movieId) {
+    fetch(`${db}/${movieId}`,{
+        method:"DELETE"
+    })
+    .then(response =>{
+        if (response.ok) {
+            //Remove the movie from the list in the UI
+            const movieElement = document.querySelector('#id' + movieId);
+            movieElement.remove();
+        } else {
+            throw new Error('Failed to delete movie');
+        }
+    })
+    .catch(error =>{
+        console.error('Error deleting movie:', error);
+    })
+}
+//Grab poster id
 function handleMovieClick(movie) {
     const poster = document.querySelector("img#poster")
     poster.src = movie.poster;
@@ -46,8 +75,9 @@ function handleBuyTicket(e) {
         ticketDiv.textContent = tickets - 1 + " remaining tickets";
     }
     else if (tickets == 0) {
-        alert("No more tickets!");
-        e.target.classList.add("sold-out");
-        e.target.classList.remove("orange");
-    }
+        ticketDiv.textContent = 'Sold Out';
+       //change of button content
+       button.target.textContent = 'Sold Out';
+       button.disabled = true;
+    }
 }
